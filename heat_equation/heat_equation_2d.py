@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import time
+import argparse
 
 def heat_calculation(x, y, t, alpha):
     return torch.sin(torch.pi * x) * torch.sin(torch.pi * y) * torch.exp(-2*alpha*torch.pi*torch.pi*t)
@@ -60,15 +61,24 @@ class HeatEquation2D(nn.Module):
         return raw * phi
 
 if __name__ == "__main__":
-    device = "mps"
+    parser = argparse.ArgumentParser(description='Train Heat Equation 2D PINN')
+    parser.add_argument('--device', type=str, default='mps', help='Device to use for training (default: mps)')
+    parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate (default: 1e-3)')
+    parser.add_argument('--steps', type=int, default=15000, help='Number of training steps (default: 15000)')
+    parser.add_argument('--examples', type=int, default=75000000, help='Total number of training examples (default: 75000000)')
+    parser.add_argument('--beta1', type=float, default=0.9, help='Adam beta1 parameter (default: 0.9)')
+    parser.add_argument('--beta2', type=float, default=0.999, help='Adam beta2 parameter (default: 0.999)')
+    args = parser.parse_args()
+    
+    device = args.device
     # Define the model
     model = HeatEquation2D().to(device)
-    examples = 75000000
-    steps = 15000# Steps per epoch
+    examples = args.examples
+    steps = args.steps
     batch_size = examples//steps
     epochs = 1
-    lr = 1e-3
-    betas = (0.9, 0.999)
+    lr = args.lr
+    betas = (args.beta1, args.beta2)
     model.train()
     optim = torch.optim.Adam(model.parameters(), lr, betas)
 

@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import time
+import argparse
 
 
 def calculate_residual_loss(x, t, v, u):
@@ -31,19 +32,30 @@ class BurgersEquation1D(nn.Module):
         return -torch.sin(torch.pi * x) + t * raw * phi
 
 if __name__ == "__main__":
-    device = "mps"
+    parser = argparse.ArgumentParser(description='Train Burgers Equation 1D PINN')
+    parser.add_argument('--device', type=str, default='mps', help='Device to use for training (default: mps)')
+    parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate (default: 1e-3)')
+    parser.add_argument('--steps', type=int, default=25000, help='Number of training steps (default: 25000)')
+    parser.add_argument('--examples', type=int, default=50000000, help='Total number of training examples (default: 50000000)')
+    parser.add_argument('--beta1', type=float, default=0.9, help='Adam beta1 parameter (default: 0.9)')
+    parser.add_argument('--beta2', type=float, default=0.999, help='Adam beta2 parameter (default: 0.999)')
+    parser.add_argument('--decay-steps', type=int, default=15000, help='Number of steps for learning rate decay (default: 15000)')
+    parser.add_argument('--eta-min', type=float, default=1e-5, help='Minimum learning rate for scheduler (default: 1e-5)')
+    args = parser.parse_args()
+    
+    device = args.device
     # Define the model
     model = BurgersEquation1D().to(device)
-    examples = 50000000
-    steps = 25000# Steps per epoch
+    examples = args.examples
+    steps = args.steps
     batch_size = examples//steps
     epochs = 1
-    lr = 1e-3
-    betas = (0.9, 0.999)
-    decay_steps = 15000
+    lr = args.lr
+    betas = (args.beta1, args.beta2)
+    decay_steps = args.decay_steps
     
     optim = torch.optim.Adam(model.parameters(), lr, betas)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, decay_steps, eta_min=1e-5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, decay_steps, eta_min=args.eta_min)
     for i in range(steps):
         start = time.time()
         # Extract batch and ensure gradients are tracked
