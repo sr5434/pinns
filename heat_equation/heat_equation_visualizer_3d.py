@@ -79,4 +79,10 @@ def update(frame_index):
 
 
 ani = animation.FuncAnimation(fig, update, frames=frames, interval=interval_ms, blit=False, repeat=False)
+
+# Save the animation as a video file
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=frames//duration_seconds, metadata=dict(artist='Me'), bitrate=1800)
+ani.save('heat_equation_3d_visualization.mp4', writer=writer)
+
 plt.show()

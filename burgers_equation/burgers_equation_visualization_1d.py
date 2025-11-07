@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation, writers
 
 # def velocity_calculation(x, t, v):
 #     N = 50
@@ -137,5 +137,8 @@ if __name__ == "__main__":
     interval = (duration * 1000) / num_frames  # milliseconds per frame
     ani = FuncAnimation(fig, update, frames=num_frames, init_func=init,
                        blit=True, interval=interval, repeat=True)
-    
+    Writer = writers['ffmpeg']
+    writer = Writer(fps=num_frames//duration, metadata=dict(artist='Me'), bitrate=1800)
+    ani.save('burgers_equation_1d_visualization.mp4', writer=writer)
+
     plt.show()
