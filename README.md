@@ -58,6 +58,9 @@ This loss function checks that the model satisfies boundary conditions, which di
 ### Initial Conditions Loss
 The initial conditions loss makes sure that the model's outputs at timestep 0 follow the initial conditions of the problem. The main purpose of this is to ensure the model "starts strong", as poor initial performance will only get worse over time. Like the boundary conditions, this loss is optional when the model is designed to always follow the initial conditions of the problem. Only the script for the 1d Burger's Equation enforces initial conditions at the architectural level, so all other scripts use an initial conditions loss.
 
+### Note on Units
+This implementation uses dimensionless quantities normalized to [0, 1] for numerical stability and generality. The solutions can be scaled to any physical units by applying appropriate transformations. This is standard practice in computational physics and ensures the neural network trains effectively.
+
 ## Heat Equation
 ![Comparison of predictions from an analytical solution and from the PINN for a slice of a cube](./plots/Heat%20Equation%203d.png)
 This repository contains code to train PINNs on the 1d, 2d, and 3d heat equations. It also contains code to generate visualizations from the 2d and 3d models (the 3d visualization is just a slice from the middle of a cube). The trained models predict how heat diffuses through a rod, a tile, and a cube respectively. This is the 3d heat equation (for 2d, remove the second derivative w.r.t. z, and for 1d, also remove the second derivative w.r.t. y):
@@ -96,8 +99,6 @@ Working on this project brought back some nostalgia for a time when I was very p
  - Implement more complex PDEs, such as the Navier-Stokes Equations and Schrödinger's Equation
  - Experiment with newer optimizers like [Muon](https://kellerjordan.github.io/posts/muon/)
  - Enable inverse problems, where the model solves for physical constants given observations of a system
-
-
 
 ## Acknowledgements
 I want to thank [Krivan Semlani](https://www.linkedin.com/in/krivansemlani/) for inspiring me to work on PINNs and encouraging me to keep up the work.
