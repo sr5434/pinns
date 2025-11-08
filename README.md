@@ -99,7 +99,7 @@ The repository also contains a script to train a PINN on the 1-dimensional varia
 $\frac{∂u}{∂t} + u\frac{∂u}{∂x} = \nu\frac{∂^2u}{∂x^2}$
 
 
-$\nu$ represents the viscosity of the fluid, and has the same range as $\alpha$. The model for Burger's Equation is a deeper and wider version of the one used for the heat equation (2 hidden layers as opposed to one, and 100 hidden dimensions instead of 50). The model supports any value of $\nu$ in the range \[0, 1\). Instead of using a fixed learning rate, the learning rate was decayed following a cosine schedule from $1*10^{-3}$ to $1*10^{-5}$ over the first 15,000 steps, and then kept flat at $1*10^{-5}$ for an additional 10,000 steps. The model was trained on a total of 50,000,000 examples. As mentioned earlier, I enforce initial and boundary conditions at the model level, so I only use the PDE loss. The model was evaluated using the visualization script, and percent error was calculated by the frame. The error goes from about 0.5% in earlier frames to 4.5% in later frames.
+$\nu$ represents the viscosity of the fluid, and has the same range as $\alpha$. The model for Burger's Equation is a deeper and wider version of the one used for the heat equation (2 hidden layers as opposed to one, and 100 hidden dimensions instead of 50). The model supports any value of $\nu$ in the range \[0, 1\). Instead of using a fixed learning rate, the learning rate was decayed following a cosine schedule from $1\*10^{-3}$ to $1\*10^{-5}$ over the first 15,000 steps, and then kept flat at $1*10^{-5}$ for an additional 10,000 steps. The model was trained on a total of 50,000,000 examples. As mentioned earlier, I enforce initial and boundary conditions at the model level, so I only use the PDE loss. The model was evaluated using the visualization script, and percent error was calculated by the frame. The error goes from about 0.5% in earlier frames to 4.5% in later frames.
 
 ## Schrödinger's Equation
 <video src="./plots/schrodinger_equation_1d.mp4" width="320" height="240" controls></video>
@@ -116,7 +116,7 @@ Where $\hbar$ is a constant representing the reduced Planck constant. It is defi
 
 $\hbar = \frac{h}{2\pi}$
 
-$\hbar \approx 1.0545718*10^-34$
+$\hbar \approx 1.0545718*10^{-34}$
 
 Due to the fact that this is such a small number, we use a value of 1 as a simplification to avoid an underflow. The magnitude of the quantum wavefunction can be used to estimate the probability that when observed at a given time, a particle in quantum superposition with a certain energy level will collapse to a given location. The model for Schrödinger's Equation is our largest by far, with 4 hidden layers and a hidden size of 256(except for our last hidden layer, which returns a tensor with 128 channels). Also, the model takes in sinusoidal features generated based on the energy level of the particle, as this helps the model adjust to differences in oscillations between lower and higher levels. Due to the oscillatory nature of higher energy levels, the highest level our model supports is 3. When enforcing the initial conditions, we scale the model's raw output by $tanh(3t)$ instead of $t$. During training, the model had an extra loss, called the magnitude loss. It is calculated by taking the mean squared error between the result of the following integral and 1:
 
