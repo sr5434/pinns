@@ -203,11 +203,12 @@ def visualize_superposition(model_path, device='cpu', L=1.0, m=1.0,
         # Update time text
         time_text.set_text(f't = {t:.3f}')
         
-        # Calculate relative error
+        # Calculate percent error
         pinn_p = pinn_probs[frame]
         anal_p = analytical_probs[frame]
         relative_error = np.mean(np.abs(pinn_p - anal_p)) / (np.mean(anal_p) + 1e-10)
-        error_text.set_text(f'Mean Relative Error: {relative_error:.4f}')
+        percent_error = relative_error * 100
+        error_text.set_text(f'Percent Error: {percent_error:.2f}%')
         
         return line_pinn, line_analytical, time_text, error_text
     
@@ -264,10 +265,13 @@ def visualize_superposition(model_path, device='cpu', L=1.0, m=1.0,
         error = np.mean(np.abs(pinn_p - anal_p)) / (np.mean(anal_p) + 1e-10)
         all_errors.append(error)
     
-    print(f"Mean Relative Error (all frames): {np.mean(all_errors):.6f}")
-    print(f"Max Relative Error: {np.max(all_errors):.6f}")
-    print(f"Min Relative Error: {np.min(all_errors):.6f}")
-    print(f"Std Relative Error: {np.std(all_errors):.6f}")
+    # Convert to percentages
+    all_errors_percent = [e * 100 for e in all_errors]
+    
+    print(f"Mean Percent Error (all frames): {np.mean(all_errors_percent):.4f}%")
+    print(f"Max Percent Error: {np.max(all_errors_percent):.4f}%")
+    print(f"Min Percent Error: {np.min(all_errors_percent):.4f}%")
+    print(f"Std Percent Error: {np.std(all_errors_percent):.4f}%")
     print("="*60)
 
 if __name__ == "__main__":
