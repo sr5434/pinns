@@ -1,11 +1,12 @@
 # Physics-Informed Neural Networks
-This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve the heat equation and Burger's Equation by learning directly from physics rather than from labeled data. All of the models can be trained in a few minutes using an M2 Mac.
+This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve problems in quantum mechanics, thermodynamics, and fluid dynamics by learning directly from physics rather than from labeled data. All of the models can be trained in a few minutes using an M2 Mac.
 
 ## Table of Contents
 - [Getting Started](#getting-started)
 - [What is a PINN?](#what-is-a-pinn)
 - [Heat Equation](#heat-equation)
 - [Burger's Equation](#burgers-equation)
+- [Schrödinger's Equation](#schrödingers-equation)
 - [Model Performance Summary](#model-performance-summary)
 - [Why do you need AI?](#why-do-you-need-ai)
 - [What I Learned](#what-i-learned)
@@ -28,25 +29,37 @@ pip install -r requirements.txt
 ```
 
 ### Usage
-#### Heat Equation
+#### Train on Heat Equation
 ```bash
 # Train the 3D heat equation model
 cd heat_equation
-python train_heat_3d.py
+python heat_equation_3d.py
 
 # Generate visualizations
-python visualize_heat_3d.py
+python heat_equation_visualizer_3d.py
 ```
-#### Burger's Equation
+#### Train on Burger's Equation
 ```bash
 # Train the 1D Burger's equation model
 cd burgers_equation
-python train_burgers_1d.py
+python burgers_equation_1d.py
 
 # Generate visualizations
-python visualize_burgers_1d.py
+python burgers_equation_visualization_1d.py
+```
+#### Train on Schrödinger's Equation
+```bash
+# Train the 1D Schrödinger's equation model
+cd schrodingers_equation
+python schrodingers_equation_1d.py
+
+# Generate visualizations
+python schrodingers_visualization_1d.py
 ```
 ## What is a PINN?
+TL;DR: PINNs are neural networks that learn to solve physics problems by learning from the underlying physical laws, rather than from labeled data.
+
+
 PINNs are just neural networks that approximate functions described by Partial Differential Equations (PDEs). The main thing that is special about PINNs is not their architecture, but rather how they are trained. PINNs are unique because they are trained to satisfy different conditions, unlike most neural networks, which are trained to mimic labeled examples. These conditions are expressed through loss functions, which are detailed below.
 
 ### PDE/Physics Loss
@@ -63,6 +76,11 @@ This implementation uses dimensionless quantities normalized to [0, 1] for numer
 
 ## Heat Equation
 <video src="./plots/heat_equation_3d_visualization.mp4" width="320" height="240" controls></video>
+
+
+https://github.com/user-attachments/assets/60dc2456-4292-490c-99aa-bce706ce7bb7
+
+
 This repository contains code to train PINNs on the 1d, 2d, and 3d heat equations. It also contains code to generate visualizations from the 2d and 3d models (the 3d visualization is just a slice from the middle of a cube). The trained models predict how heat diffuses through a rod, a tile, and a cube respectively. This is the 3d heat equation (for 2d, remove the second derivative w.r.t. z, and for 1d, also remove the second derivative w.r.t. y):
 
 $\frac{∂u}{∂t} = \alpha(\frac{∂^2u}{∂x^2} + \frac{∂^2u}{∂y^2} + \frac{∂^2u}{∂z^2})$
@@ -71,12 +89,36 @@ Here, $\alpha$ is a constant representing the thermal diffusivity of a material.
 
 ## Burger's Equation
 <video src="./plots/burgers_equation_1d_visualization.mp4" width="320" height="240" controls></video>
+
+
+https://github.com/user-attachments/assets/087da0a3-1385-4069-abf7-c7fc6d569190
+
+
 The repository also contains a script to train a PINN on the 1-dimensional variant of Burger's Equation (higher dimensions coming soon!), which predicts the instantaneous velocity of a particle in a fluid. This is the equation for 1d fluids:
 
 $\frac{∂u}{∂t} + u\frac{∂u}{∂x} = \nu\frac{∂^2u}{∂x^2}$
 
 
 $\nu$ represents the viscosity of the fluid, and has the same range as $\alpha$. The model for Burger's Equation is a deeper and wider version of the one used for the heat equation (2 hidden layers as opposed to one, and 100 hidden dimensions instead of 50). The model supports any value of $\nu$ in the range \[0, 1\). Instead of using a fixed learning rate, the learning rate was decayed following a cosine schedule from $1*10^{-3}$ to $1*10^{-5}$ over the first 15,000 steps, and then kept flat at $1*10^{-5}$ for an additional 10,000 steps. The model was trained on a total of 50,000,000 examples. As mentioned earlier, I enforce initial and boundary conditions at the model level, so I only use the PDE loss. The model was evaluated using the visualization script, and percent error was calculated by the frame. The error goes from about 0.5% in earlier frames to 4.5% in later frames.
+
+## Schrödinger's Equation
+<video src="./plots/schrodinger_equation_1d.mp4" width="320" height="240" controls></video>
+
+There is a script to train a model to predict the wavefunction of a quantum particle in a 1d box over time, following the Time-Dependent Schrödinger's Equation:
+
+$i\hbar\frac{∂\psi}{∂t} = -\frac{\hbar}{2m}\frac{∂^2\psi}{∂x^2}$
+
+Where $\hbar$ is a constant representing the reduced Planck constant. It is defined below:
+
+$\hbar = \frac{h}{2\pi}$
+
+$\hbar \approx 1.0545718*10^-34$
+
+Due to the fact that this is such a small number, we use a value of 1 as a simplification to avoid an underflow. The magnitude of the quantum wavefunction can be used to estimate the probability that when observed at a given time, a particle in quantum superposition with a certain energy level will collapse to a given location. The model for Schrödinger's Equation is our largest by far, with 4 hidden layers and a hidden size of 256(except for our last hidden layer, which returns a tensor with 128 channels). Also, the model takes in sinusoidal features generated based on the energy level of the particle, as this helps the model adjust to differences in oscillations between lower and higher levels. Due to the oscillatory nature of higher energy levels, the highest level our model supports is 3. When enforcing the initial conditions, we scale the model's raw output by $tanh(3t)$ instead of $t$. During training, the model had an extra loss, called the magnitude loss. It is calculated by taking the mean squared error between the result of the following integral and 1:
+
+$\int_{-\infty}^{\infty} |\psi(x, t)| \,dx$
+
+Intuitively, this can be thought of as a metric to verify that the probabilities in the distribution generated by taking the magnitude of the wavefunction sum to 1.
 
 ## Model Performance Summary
 | Model | Architecture | Training Samples | Max Error |
@@ -85,9 +127,12 @@ $\nu$ represents the viscosity of the fluid, and has the same range as $\alpha$.
 | Heat 2D | 1 layer, 50 hidden | 75M | <1.5% |
 | Heat 3D | 1 layer, 50 hidden | 75M | <10% |
 | Burger's 1D | 2 layers, 100 hidden | 50M | <4.5% |
+| Schrödinger's 1D | 4 layers, 256/256/128 hidden | 300M | 2.5% to 11% depending on energy level[^1] |
+
+[^1]: The error for the Schrödinger's Equation model varies based on the energy level of the particle. Lower energy levels tend to have lower error, while higher energy levels exhibit higher error due to their increased oscillatory behavior.
 
 ## Why do you need AI?
-It is true that analytical solutions to the heat equation and Burger's Equation are far more efficient than using a PINN. However, there are many unique attributes that make PINNs useful. For example, given the outputs of the model and all spatial/temporal inputs, it is possible to solve for the thermal diffusivity of an object or the viscosity of a fluid. Also, in more complex scenarios, analytical solutions may not exist, meaning PINNs are the only way to approximate the solution to a PDE.
+It is true that analytical solutions to the heat equation, Burger's Equation, and Schrödinger's Equation are far more efficient than using a PINN. However, there are many unique attributes that make PINNs useful. For example, given the outputs of the model and all spatial/temporal inputs, it is possible to solve for the thermal diffusivity of an object, the viscosity of a fluid, or the energy level of a particle. Also, in more complex scenarios, analytical solutions may not exist, meaning PINNs are the only way to approximate the solution to a PDE. This is especially true in quantum mechanics, where even simple systems like a Helium atom are difficult to solve numerically or analytically. PINNs also have the advantage of being mesh-free, meaning they can make predictions at any point in space and time without needing to be retrained or interpolated.
 
 ## What I Learned
 I learned a lot about physics and multivariate calculus from doing this project. This project also helped me realize how simple natural concepts like heat diffusion (which require a couple thousand parameters to model) are compared to man-made constructs like language (which require billions or trillions of parameters to model effectively). 
@@ -96,7 +141,7 @@ Working on this project brought back some nostalgia for a time when I was very p
 
 ## What's Next?
  - Scale up Burger's Equation to 2d and 3d
- - Implement more complex PDEs, such as the Navier-Stokes Equations and Schrödinger's Equation
+ - Implement more complex PDEs, such as the Navier-Stokes Equations
  - Experiment with newer optimizers like [Muon](https://kellerjordan.github.io/posts/muon/)
  - Enable inverse problems, where the model solves for physical constants given observations of a system
 
