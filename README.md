@@ -1,5 +1,5 @@
 # Physics-Informed Neural Networks
-This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve problems in quantum mechanics, thermodynamics, and fluid dynamics by learning directly from physics rather than from labeled data. All of the models can be trained in a few minutes using an M2 Mac.
+This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve problems in quantum mechanics, thermodynamics, and fluid dynamics by learning directly from physics rather than from labeled data. All of the models can be trained in a few minutes using an M2 Mac. Pretrained models can be found in [this Huggingface model](https://huggingface.co/sr5434/PINN-Collection).
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -38,6 +38,14 @@ python heat_equation_3d.py
 # Generate visualizations
 python heat_equation_visualizer_3d.py
 ```
+#### Test Pretrained Model on Heat Equation
+```bash
+cd heat_equation
+
+# Generate visualizations
+curl "https://huggingface.co/sr5434/PINN-Collection/resolve/main/heat_equation_3d.pt?download=true" -o heat_equation_3d.pt
+python heat_equation_visualizer_3d.py
+```
 #### Train on Burger's Equation
 ```bash
 # Train the 1D Burger's equation model
@@ -45,6 +53,14 @@ cd burgers_equation
 python burgers_equation_1d.py
 
 # Generate visualizations
+python burgers_equation_visualization_1d.py
+```
+#### Test Pretrained Model on Burger's Equation
+```bash
+cd burgers_equation
+
+# Generate visualizations
+curl "https://huggingface.co/sr5434/PINN-Collection/resolve/main/burgers_equation_1d.pt?download=true" -o burgers_equation_1d.pt
 python burgers_equation_visualization_1d.py
 ```
 #### Train on Schrödinger's Equation
@@ -56,6 +72,16 @@ python schrodingers_equation_1d.py
 # Generate visualizations
 python schrodingers_visualization_1d.py
 ```
+
+#### Test Pretrained Model on Schrödinger's Equation
+```bash
+cd schrodingers_equation
+
+# Generate visualizations
+curl "https://huggingface.co/sr5434/PINN-Collection/resolve/main/schrodingers_equation_1d.pt?download=true" -o schrodingers_equation_1d.pt
+python schrodingers_visualization_1d.py
+```
+
 ## What is a PINN?
 TL;DR: PINNs are neural networks that learn to solve physics problems by learning from the underlying physical laws, rather than from labeled data.
 
