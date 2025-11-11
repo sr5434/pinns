@@ -98,14 +98,14 @@ class SchrodingerEquation1D(nn.Module):
 if __name__ == "__main__":
     device = "mps"
     # Define the model
-    examples = 300000000
-    steps = 40000# Steps per epoch
+    examples = 400000000
+    steps = 50000# Steps per epoch
     length = 1.0# Length of the 1d box
     mass = 1.0
     batch_size = examples//steps
     epochs = 1
     lr = 1e-3
-    decay_steps = 15000
+    decay_steps = 44998# 2 less than the total steps for lr scheduler just to be safe
     # softAdapt = SoftAdapt(beta=0.1)
     betas = (0.9, 0.999)
     model = SchrodingerEquation1D(length).to(device)
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     # magnitude_loss_history = []
     # update_loss_weights_every = 5
     optim = torch.optim.Adam(model.parameters(), lr, betas)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optim, eta_min=1e-4, T_0 = 5000)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optim, eta_min=1e-4, T_0 = 15000)
     weights = torch.tensor([1.0, 1.0])
     for i in range(steps):
         start = time.time()
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         # Build a batch: G groups, P x-samples each
         G = batch_size//32
         P = batch_size//G
-        max_energy = min(int(i/5000 + 1), 3)
+        max_energy = min(int(i/15000 + 1), 3)
         t_time = torch.rand(G, 1, device=device, requires_grad=True).repeat_interleave(P, dim=0)
         energy_levels = torch.randint(1, max_energy + 1, (G, 1), device=device).repeat_interleave(P, dim=0)
         x_space = torch.rand(G * P, 1, device=device, requires_grad=True)
