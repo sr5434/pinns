@@ -130,8 +130,9 @@ $\nu$ represents the viscosity of the fluid, and has the same range as $\alpha$.
 ## Schrödinger's Equation
 <video src="./plots/schrodinger_equation_1d.mp4" width="320" height="240" controls></video>
 
+https://github.com/user-attachments/assets/e0f91fa9-b126-4f74-a397-215d36b291f6
 
-https://github.com/user-attachments/assets/fe98af31-a5e0-40f0-8170-24a4bfe92f13
+
 
 
 There is a script to train a model to predict the wavefunction of a quantum particle in a 1d box over time, following the Time-Dependent Schrödinger's Equation:
