@@ -145,7 +145,7 @@ $\hbar = \frac{h}{2\pi}$
 
 $\hbar \approx 1.0545718*10^{-34}$
 
-Due to the fact that this is such a small number, we use a value of 1 as a simplification to avoid an underflow. $\hat{H}$ is the Hamiltonian operator, defined for this quantum system as:
+Due to the fact that this is such a small number, a value of 1 is used as a simplification to avoid an underflow. $\hat{H}$ is the Hamiltonian operator, defined for this quantum system as:
 
 $\hat{H} = -\frac{\hbar}{2m}\frac{∂^2}{∂x^2} + V(x)$
 
@@ -156,7 +156,7 @@ The squared magnitude of the quantum wavefunction can be used to estimate the pr
 $P(a \leq x \leq b, t) = \displaystyle\int_{a}^{b} |\psi(x, t)|^2 \,dx$
 
 
-The model for Schrödinger's Equation is our largest by far, with 4 hidden layers and a hidden size of 256(except for our last hidden layer, which returns a tensor with 128 channels). Also, the model takes in sinusoidal features generated based on the energy level of the particle, as this helps the model adjust to differences in oscillations between lower and higher levels. Due to the oscillatory nature of higher energy levels, the highest level our model supports is 3. The model was trained with a Cosine decay learning rate schedule that had a warm restart whenever the maximum energy level present in the data was increased(the maximum energy level was increased every 15,000 steps, and the warmup occured slightly before this). The learning rate started at 0.001 and decayed to 0.0001. After 45,000 steps, the learning rate plateaued at the minimum. When enforcing the initial conditions, we scale the model's raw output by $tanh(3t)$ instead of $t$. During training, the model had an extra loss, called the magnitude loss. The magnitude loss measures the model's adherence to the normalization condition. It is calculated by taking the mean squared error between the result of the following integral and 1:
+The model for Schrödinger's Equation is our largest by far, with 4 hidden layers and a hidden size of 256(except for our last hidden layer, which returns a tensor with 128 channels). Also, the model takes in sinusoidal features generated based on the energy level of the particle, as this helps the model adjust to differences in oscillations between lower and higher levels. Due to the oscillatory nature of higher energy levels, the highest level our model supports is 3. The model was trained with a Cosine decay learning rate schedule that had a warm restart whenever the maximum energy level present in the data was increased(the maximum energy level was increased every 15,000 steps, and the warmup occured slightly before this). The learning rate started at 0.001 and decayed to 0.0001. After 45,000 steps, the learning rate plateaued at the minimum. When enforcing the initial conditions, the model's raw output is scaled by $tanh(3t)$ instead of $t$. During training, the model had an extra loss, called the magnitude loss. The magnitude loss measures the model's adherence to the normalization condition. It is calculated by taking the mean squared error between the result of the following integral and 1:
 
 $\displaystyle\int_{0}^{L} |\psi(x, t)|^2 \,dx$
 
