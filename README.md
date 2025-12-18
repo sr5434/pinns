@@ -100,7 +100,7 @@ The initial conditions loss makes sure that the model's outputs at timestep 0 fo
 ### Total Loss
 The loss can be formalized as a weighted sum of the different losses described above:
 
-$\mathcal{L}(\theta) = w_{PDE} * \mathcal{L}_{PDE} + w_{BC} * \mathcal{L}_{BC} + w_{IC} * \mathcal{L}_{IC}$
+$ℒ(\theta) = w_{PDE} * ℒ_{PDE} + w_{BC} * ℒ_{BC} + w_{IC} * ℒ_{IC}$
 
 The heat equation model places a weight of 2 on the initial conditions loss, while the other models use a weight of 1 for all losses. The weights can be adjusted to prioritize certain losses over others, depending on the problem at hand.
 
