@@ -1,5 +1,5 @@
 # Physics-Informed Neural Networks
-This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve problems in quantum mechanics, thermodynamics, and fluid dynamics by learning directly from physics rather than from labeled data. All of the models can be trained in a few minutes using an M2 Mac. Pretrained models can be found in [this Huggingface model](https://huggingface.co/sr5434/PINN-Collection).
+This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve problems in quantum mechanics, thermodynamics, and fluid dynamics by learning directly from physics rather than from labeled data. Most of the models can be trained in a few minutes using an M2 Mac. Pretrained models can be found in [this Huggingface model](https://huggingface.co/sr5434/PINN-Collection).
 
 ## Table of Contents
 - [Getting Started](#getting-started)
