@@ -6,7 +6,7 @@ This repository contains a collection of physics-informed neural networks (PINNs
 - [What is a PINN?](#what-is-a-pinn)
 - [Heat Equation](#heat-equation)
 - [Burgers' Equation](#burgers-equation)
-- [Schrödinger's Equation](#schrödingers-equation)
+- [Schrödinger Equation](#schrödingers-equation)
 - [Model Performance Summary](#model-performance-summary)
 - [Why do you need AI?](#why-do-you-need-ai)
 - [What I Learned](#what-i-learned)
@@ -43,7 +43,7 @@ python heat_equation_visualizer_3D.py
 cd heat_equation
 
 # Generate visualizations
-curl "https://huggingface.co/sr5434/PINN-Collection/resolve/main/heat_equation_3D.pt?download=true" -o heat_equation_3D.pt
+curl -L "https://huggingface.co/sr5434/PINN-Collection/resolve/main/heat_equation_3d.pt?download=true" -o heat_equation_3d.pt
 python heat_equation_visualizer_3D.py
 ```
 #### Train on Burgers' Equation
@@ -60,26 +60,44 @@ python burgers_equation_visualization_1D.py
 cd burgers_equation
 
 # Generate visualizations
-curl "https://huggingface.co/sr5434/PINN-Collection/resolve/main/burgers_equation_1D.pt?download=true" -o burgers_equation_1D.pt
-python burgers_equation_visualization_1D.py
+curl -L "https://huggingface.co/sr5434/PINN-Collection/resolve/main/burgers_equation_1d.pt?download=true" -o burgers_equation_1d.pt
+python burgers_equation_visualization_1d.py
 ```
-#### Train on Schrödinger's Equation
+#### Train on Schrödinger Equation(1D)
 ```bash
-# Train the 1D Schrödinger's equation model
+# Train the 1D Schrödinger equation model
 cd schrodingers_equation
-python schrodingers_equation_1D.py
+python schrodingers_equation_1d.py
 
 # Generate visualizations
-python schrodingers_visualization_1D.py
+python schrodingers_visualization_1d.py
 ```
 
-#### Test Pretrained Model on Schrödinger's Equation
+#### Test Pretrained Model on Schrödinger Equation(1D)
 ```bash
 cd schrodingers_equation
 
 # Generate visualizations
-curl "https://huggingface.co/sr5434/PINN-Collection/resolve/main/schrodingers_equation_1D.pt?download=true" -o schrodingers_equation_1D.pt
-python schrodingers_visualization_1D.py
+curl -L "https://huggingface.co/sr5434/PINN-Collection/resolve/main/schrodingers_equation_1d.pt?download=true" -o schrodingers_equation_1d.pt
+python schrodingers_visualization_1d.py
+```
+#### Train on Schrödinger Equation(Hydrogen)
+```bash
+# Train the 1D Schrödinger equation model
+cd schrodingers_equation
+python schrodingers_equation_hydrogen.py
+
+# Generate visualizations
+python schrodingers_visualization_hydrogen.py
+```
+
+#### Test Pretrained Model on Schrödinger Equation(Hydrogen)
+```bash
+cd schrodingers_equation
+
+# Generate visualizations
+curl -L "https://huggingface.co/sr5434/PINN-Collection/resolve/main/schrodingers_equation_hydrogen.pt?download=true" -o schrodingers_equation_hydrogen.pt
+python schrodingers_visualization_hydrogen.py
 ```
 
 ## What is a PINN?
@@ -133,7 +151,7 @@ Here, $\alpha$ is a constant representing the thermal diffusivity of a material.
 https://github.com/user-attachments/assets/087da0a3-1385-4069-abf7-c7fc6d569190
 
 
-The repository also contains a script to train a PINN on the 1-dimensional variant of Burgers' Equation (higher dimensions coming soon!), which predicts the instantaneous velocity of a particle in a fluid. Burgers' Equation is as follows:
+The repository also contains a script to train a PINN on the 1-dimensional variant of Burgers' Equation, which predicts the instantaneous velocity of a particle in a fluid. Burgers' Equation is as follows:
 
 $\frac{∂u}{∂t} + u \cdot \nabla u = \nu\nabla^2u$
 
@@ -148,7 +166,8 @@ $\nu$ represents the viscosity of the fluid, and has the same range as $\alpha$.
 - Public policy: Modeling traffic flow
 - Acoustics: Describing sound waves
 
-## Schrödinger's Equation
+## Schrödinger Equation
+### Time-Dependent Schrödinger Equation in 1D
 <video src="./plots/schrodinger_equation_1D.mp4" width="320" height="240" controls></video>
 
 https://github.com/user-attachments/assets/e0f91fa9-b126-4f74-a397-215d36b291f6
@@ -156,7 +175,7 @@ https://github.com/user-attachments/assets/e0f91fa9-b126-4f74-a397-215d36b291f6
 
 
 
-There is a script to train a model to predict the wavefunction of a quantum particle in a 1D infinite square well over time, following the Time-Dependent Schrödinger's Equation:
+There is a script to train a model to predict the wavefunction of a quantum particle in a 1D infinite square well over time, following the Time-Dependent Schrödinger Equation:
 
 $i\hbar\frac{∂}{∂t}|\psi⟩ = \hat{H}|\psi⟩$
 
@@ -177,7 +196,7 @@ The squared magnitude of the quantum wavefunction can be used to estimate the pr
 $P(a \leq x \leq b, t) = \displaystyle\int_{a}^{b} |\psi(x, t)|^2 \,dx$
 
 
-The model for Schrödinger's Equation is our largest by far, with 4 hidden layers and a hidden size of 256(except for our last hidden layer, which returns a tensor with 128 channels). Also, the model takes in sinusoidal features generated based on the energy level of the particle, as this helps the model adjust to differences in oscillations between lower and higher levels. Due to the oscillatory nature of higher energy levels, the highest level our model supports is 3. The model was trained with a Cosine decay learning rate schedule that had a warm restart whenever the maximum energy level present in the data was increased(the maximum energy level was increased every 15,000 steps, and the warmup occurred slightly before this). The learning rate started at 0.001 and decayed to 0.0001. After 45,000 steps, the learning rate plateaued at the minimum. Like the other 2 models, the tanh activation function and Adam optimizer are used here. When enforcing the initial conditions, the model's raw output is scaled by $tanh(3t)$ instead of $t$. During training, the model had an extra loss, called the magnitude loss. The magnitude loss measures the model's adherence to the normalization condition. It is calculated by taking the mean squared error between the result of the following integral and 1:
+The model for Schrödinger Equation is our largest by far, with 4 hidden layers and a hidden size of 256(except for our last hidden layer, which returns a tensor with 128 channels). Also, the model takes in sinusoidal features generated based on the energy level of the particle, as this helps the model adjust to differences in oscillations between lower and higher levels. Due to the oscillatory nature of higher energy levels, the highest level our model supports is 3. The model was trained with a Cosine decay learning rate schedule that had a warm restart whenever the maximum energy level present in the data was increased(the maximum energy level was increased every 15,000 steps, and the warmup occurred slightly before this). The learning rate started at 0.001 and decayed to 0.0001. After 45,000 steps, the learning rate plateaued at the minimum. Like the other 2 models, the tanh activation function and Adam optimizer are used here. When enforcing the initial conditions, the model's raw output is scaled by $tanh(3t)$ instead of $t$. During training, the model had an extra loss, called the magnitude loss. The magnitude loss measures the model's adherence to the normalization condition. It is calculated by taking the mean squared error between the result of the following integral and 1:
 
 $\displaystyle\int_{0}^{L} |\psi(x, t)|^2 \,dx$
 
@@ -185,9 +204,35 @@ Here, L is the length of the infinite square well (which is 1 in our dimensionle
 
 It should also be noted that unlike the other 2 models, this model outputs 2 channels, representing the real and imaginary components of the complex wavefunction.
 
+### Time-Independent Schrödinger Equation for Hydrogen Atom
+<img src="./plots/hydrogen_1s_compare.png"/>
+The repository also contains code to train and visualize a PINN that solves the Time-Independent Schrödinger Equation for the Hydrogen atom. Currently, only the 1s orbital is supported, but support for more orbitals is coming soon! The Time-Independent equation was used because the probability density of hydrogen orbitals does not change over time. The Time-Independent Schrödinger Equation is as follows:
+
+$ \hat{H}|\psi⟩ = E|\psi⟩ $
+
+Where $E$ represents the energy of the particle, which is constant over time in this scenario. The Hamiltonian operator for the hydrogen atom is defined as:
+
+$ \hat{H} = -\frac{\hbar^2}{2m}\nabla^2 - \frac{e^2}{4\pi\epsilon_0r} $
+
+Where the Laplacian operator in spherical coordinates is defined as:
+
+$ \nabla^2 = \frac{1}{r^2}\frac{∂}{∂r}(r^2\frac{∂}{∂r}) + \frac{1}{r^2sin\theta}\frac{∂}{∂\theta}(sin\theta\frac{∂}{∂\theta}) + \frac{1}{r^2sin^2\theta}\frac{∂^2}{∂\phi^2} $
+
+And the Coulomb potential term, $-\frac{e^2}{4\pi\epsilon_0r}$, represents the electrostatic attraction between the positively charged nucleus and the negatively charged electron. Here, $e$ is the elementary charge, and $\epsilon_0$ is the permittivity of free space. Similar to the Time-Dependent model, both $\hbar$ and $m$ are set to 1 for simplicity, and we simplify the true Coulomb term to $-\frac{1}{r}$.
+
+The energy is calculated using the following formula:
+
+$ E_n = -\frac{1}{2n^2} $
+
+Due to the fact that this model supports 3 dimensions, the magnitude loss is defines as follows:
+
+$\displaystyle\int_{0}^{\pi} \int_{0}^{2\pi} \int_{0}^{\infty} |\psi(r, \theta, \phi)|^2 r^2 sin\theta \,dr\,d\theta\,d\phi$
+
+The model architecture is the same as the one used for the Time-Dependent Schrödinger Equation, except that the input layer has been modified to accept 3 spatial dimensions instead of 1 spatial and 1 temporal dimension. The model was trained on 100,000,000 samples using the Adam optimizer with the same cosine schedule as the Time-Dependent model, but without warm restarts. The model only outputs 1 channel, representing the real component of the wavefunction, as the imaginary component is 0 for time-independent quantum systems. Unlike the other models, this model uses spherical coordinates as inputs, which are then converted to Cartesian coordinates for visualization. The network takes an input for energy level, but since only the 1s orbital is supported, this input should always be 1.
+
 ### Applications
 - Physics Research: Modeling cold atom traps
-- Nanotechnology: Predicting the activity of strongly confined quantum dots
+- Chemistry: Understanding atomic structures and reactions
 
 ## Model Performance Summary
 | Model | Architecture | Training Samples | Max Error |
@@ -196,12 +241,13 @@ It should also be noted that unlike the other 2 models, this model outputs 2 cha
 | Heat 2D | 1 layer, 50 hidden | 75M | <1.5% |
 | Heat 3D | 1 layer, 50 hidden | 170M | <4% |
 | Burgers' 1D | 2 layers, 100 hidden | 50M | <4.5% |
-| Schrödinger's 1D | 4 layers, 256/256/128 hidden | 400M | 1% to 6.5% depending on energy level[^1] |
+| Schrödinger 1D | 4 layers, 256/256/128 hidden | 400M | 1% to 6.5% depending on energy level[^1] |
+| Schrödinger Hydrogen 1s | 4 layers, 256/256/128 hidden | 100M | <2% |
 
-[^1]: The error for the Schrödinger's Equation model varies based on the energy level of the particle. Lower energy levels tend to have lower error, while higher energy levels exhibit higher error due to their increased oscillatory behavior.
+[^1]: The error for the Schrödinger Equation model varies based on the energy level of the particle. Lower energy levels tend to have lower error, while higher energy levels exhibit higher error due to their increased oscillatory behavior.
 
 ## Why do you need AI?
-It is true that analytical solutions to the heat equation, Burgers' Equation, and Schrödinger's Equation are far more efficient than using a PINN. However, there are many unique attributes that make PINNs useful. For example, given the outputs of the model and all spatial/temporal inputs, it is possible to solve for the thermal diffusivity of an object, the viscosity of a fluid, or the energy level of a particle. Also, in more complex scenarios, analytical solutions may not exist, meaning PINNs are the only way to approximate the solution to a PDE. This is especially true in quantum mechanics, where even simple systems like a Helium atom are difficult to solve numerically or analytically. PINNs also have the advantage of being mesh-free, meaning they can make predictions at any point in space and time without needing to be retrained or interpolated.
+It is true that analytical solutions to the heat equation, Burgers' Equation, and Schrödinger Equation are far more efficient than using a PINN. However, there are many unique attributes that make PINNs useful. For example, given the outputs of the model and all spatial/temporal inputs, it is possible to solve for the thermal diffusivity of an object, the viscosity of a fluid, or the energy level of a particle. Also, in more complex scenarios, analytical solutions may not exist, meaning PINNs are the only way to approximate the solution to a PDE. This is especially true in quantum mechanics, where even simple systems like a Helium atom are difficult to solve numerically or analytically. PINNs also have the advantage of being mesh-free, meaning they can make predictions at any point in space and time without needing to be retrained or interpolated.
 
 ## What I Learned
 I learned a lot about physics and multivariate calculus from doing this project. This project also helped me realize how simple natural concepts like heat diffusion (which require a couple thousand parameters to model) are compared to man-made constructs like language (which require billions or trillions of parameters to model effectively). 
