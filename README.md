@@ -208,21 +208,21 @@ It should also be noted that unlike the other 2 models, this model outputs 2 cha
 <img src="./plots/hydrogen_1s_compare.png"/>
 The repository also contains code to train and visualize a PINN that solves the Time-Independent Schrödinger Equation for the Hydrogen atom. Currently, only the 1s orbital is supported, but support for more orbitals is coming soon! The Time-Independent equation was used because the probability density of hydrogen orbitals does not change over time. The Time-Independent Schrödinger Equation is as follows:
 
-$ \hat{H}|\psi⟩ = E|\psi⟩ $
+$\hat{H}|\psi⟩ = E|\psi⟩$
 
 Where $E$ represents the energy of the particle, which is constant over time in this scenario. The Hamiltonian operator for the hydrogen atom is defined as:
 
-$ \hat{H} = -\frac{\hbar^2}{2m}\nabla^2 - \frac{e^2}{4\pi\epsilon_0r} $
+$\hat{H} = -\frac{\hbar^2}{2m}\nabla^2 - \frac{e^2}{4\pi\epsilon_0r}$
 
 Where the Laplacian operator in spherical coordinates is defined as:
 
-$ \nabla^2 = \frac{1}{r^2}\frac{∂}{∂r}(r^2\frac{∂}{∂r}) + \frac{1}{r^2sin\theta}\frac{∂}{∂\theta}(sin\theta\frac{∂}{∂\theta}) + \frac{1}{r^2sin^2\theta}\frac{∂^2}{∂\phi^2} $
+$\nabla^2 = \frac{1}{r^2}\frac{∂}{∂r}(r^2\frac{∂}{∂r}) + \frac{1}{r^2sin\theta}\frac{∂}{∂\theta}(sin\theta\frac{∂}{∂\theta}) + \frac{1}{r^2sin^2\theta}\frac{∂^2}{∂\phi^2}$
 
 And the Coulomb potential term, $-\frac{e^2}{4\pi\epsilon_0r}$, represents the electrostatic attraction between the positively charged nucleus and the negatively charged electron. Here, $e$ is the elementary charge, and $\epsilon_0$ is the permittivity of free space. Similar to the Time-Dependent model, both $\hbar$ and $m$ are set to 1 for simplicity, and we simplify the true Coulomb term to $-\frac{1}{r}$.
 
 The energy is calculated using the following formula:
 
-$ E_n = -\frac{1}{2n^2} $
+$E_n = -\frac{1}{2n^2}$
 
 Due to the fact that this model supports 3 dimensions, the magnitude loss is defines as follows:
 
