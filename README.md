@@ -108,10 +108,10 @@ The heat equation model places a weight of 2 on the initial conditions loss, whi
 This implementation uses dimensionless quantities normalized to [0, 1] for numerical stability and generality. The solutions can be scaled to any physical units by applying appropriate transformations. This is standard practice in computational physics and ensures the neural network trains effectively.
 
 ## Heat Equation
-<video src="./plots/heat_equation_3D_visualization.mp4" width="320" height="240" controls></video>
 
 
-https://github.com/user-attachments/assets/60dc2456-4292-490c-99aa-bce706ce7bb7
+https://github.com/user-attachments/assets/3d2c5153-d9c6-426f-a677-92130e047e3a
+
 
 
 This repository contains code to train PINNs on the 1D, 2D, and 3D heat equations. It also contains code to generate visualizations from the 2D and 3D models (the 3D visualization is just a slice from the middle of a cube). The trained models predict how heat diffuses through a rod, a tile, and a cube respectively. This is the 3D heat equation (for 2D, remove the second derivative w.r.t. z, and for 1D, also remove the second derivative w.r.t. y):
