@@ -207,6 +207,10 @@ It should also be noted that unlike the other 2 models, this model outputs 2 cha
 ### Time-Independent Schrödinger Equation for Hydrogen Atom
 <video src="./plots/schrodinger_equation_hydrogen.mp4" width="320" height="240" controls></video>
 
+
+https://github.com/user-attachments/assets/ec5d879f-72f1-4780-be18-b965e7244c39
+
+
 The repository also contains code to train and visualize a PINN that solves the Time-Independent Schrödinger Equation for the radial portion (more on this below) of Hydrogen's wavefunction. The model supports the 1s, 2s, and 2p orbitals. The Time-Independent equation was used because the probability density of hydrogen orbitals does not change over time. The Time-Independent Schrödinger Equation is as follows:
 
 $\hat{H}|\psi⟩ = E|\psi⟩$
@@ -236,7 +240,7 @@ $$(2⟨T⟩ + ⟨V⟩)^2 = 0$$
 
 Where $⟨T⟩$ is the expected kinetic energy, and $⟨V⟩$ is the expected potential energy. The expectation of an operator is calculated like this:
 
-$$⟨A⟩ = \frac{\displaystyle\int_{0}^{\infty} u^*(r)\hat{A}u(r) dr}{\displaystyle\int_{0}^{\infty} u^*(r)u(r) dr}$$
+$$⟨A⟩ = \frac{\displaystyle\int_{0}^{\infty} u^{\*}(r)\hat{A}u(r) dr}{\displaystyle\int_{0}^{\infty} u^{\*}(r)u(r) dr}$$
 
 This can be thought of as a continuous average of the operator over all space, weighted by the probability density of the particle being at each location. 
 
