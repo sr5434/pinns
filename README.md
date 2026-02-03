@@ -205,8 +205,9 @@ Here, L is the length of the infinite square well (which is 1 in our dimensionle
 It should also be noted that unlike the other 2 models, this model outputs 2 channels, representing the real and imaginary components of the complex wavefunction.
 
 ### Time-Independent Schrödinger Equation for Hydrogen Atom
-<img src="./plots/hydrogen_1s_compare.png"/>
-The repository also contains code to train and visualize a PINN that solves the Time-Independent Schrödinger Equation for the Hydrogen atom. Currently, only the 1s orbital is supported, but support for more orbitals is coming soon! The Time-Independent equation was used because the probability density of hydrogen orbitals does not change over time. The Time-Independent Schrödinger Equation is as follows:
+<video src="./plots/schrodinger_equation_hydrogen.mp4" width="320" height="240" controls></video>
+
+The repository also contains code to train and visualize a PINN that solves the Time-Independent Schrödinger Equation for the radial portion (more on this below) of Hydrogen's wavefunction. The model supports the 1s, 2s, and 2p orbitals. The Time-Independent equation was used because the probability density of hydrogen orbitals does not change over time. The Time-Independent Schrödinger Equation is as follows:
 
 $\hat{H}|\psi⟩ = E|\psi⟩$
 
@@ -218,19 +219,42 @@ Where the Laplacian operator in spherical coordinates is defined as:
 
 $$\nabla^2 = \underbrace{\frac{1}{r^2}\frac{∂}{∂r}(r^2\frac{∂}{∂r})}_{\text{Radial}} + \underbrace{\frac{1}{r^2sin\theta}\frac{∂}{∂\theta}(sin\theta\frac{∂}{∂\theta}) + \frac{1}{r^2sin^2\theta}\frac{∂^2}{∂\phi^2}}_{\text{Angular}}$$
 
-And the Coulomb potential term, $-\frac{e^2}{4\pi\epsilon_0r}$, represents the electrostatic attraction between the positively charged nucleus and the negatively charged electron. Here, $e$ is the elementary charge, and $\epsilon_0$ is the permittivity of free space. Similar to the Time-Dependent model, both $\hbar$ and $m$ are set to 1 for simplicity, and we simplify the true Coulomb term to $-\frac{1}{r}$. The Coulomb potential term becomes less negative further from the nucleus, reflecting Coulomb's law that force of attraction becomes stronger as you approach the nucleus. This increased negativity near the nucleus allows wavefunctions concentrated near the center to have lower energy.
+And the Coulomb potential term, $-\frac{e^2}{4\pi\epsilon_0r}$, represents the electrostatic attraction between the positively charged nucleus and the negatively charged electron. Here, $e$ is the elementary charge, and $\epsilon_0$ is the permittivity of free space. Similar to the Time-Dependent model, both $\hbar$ and $m$ are set to 1 for simplicity, and we simplify the true Coulomb term to $-\frac{1}{r}$. The Coulomb potential term becomes less negative further from the nucleus, reflecting Coulomb's law that force of attraction becomes stronger as you approach the nucleus. This increased negativity near the nucleus allows wavefunctions concentrated near the center to have lower energy. $\psi(r, \theta, \phi)$ separates into a radial and angular portion as follows:
+$$\psi(r, \theta, \phi) = R(r)Y_{lm}(\theta, \phi)$$
 
-The energy is calculated using the following formula:
+$Y_{lm}(\theta, \phi)$ represents the spherical harmonics, which are encoded analytically in our model because they are well-known functions. L and m are quantum numbers. Because our model needs to learn to solve the radial portion, our problem simplifies to an ODE in terms of $u(r) = rR(r)$:
 
-$$E_n = -\frac{1}{2n^2}$$
+$$-\frac{\hbar}{2}\frac{d^2u}{dr^2} + \frac{l(l+1)\hbar^2}{2r^2}u - \frac{1}{r}u = Eu$$
 
-Due to the fact that this model supports 3 dimensions, the magnitude loss is defined as follows:
+This system solves the quantum eigenvalue problem for the hydrogen atom, meaning that the analytical values of E are not used in training. The exact values are present in the codebase for evaluation purposes, however. The Rayleigh quotient is used to estimate the energy level of the particle based on the model's current prediction for the wavefunction:
 
-$$\displaystyle\int_{0}^{\pi} \int_{0}^{2\pi} \int_{0}^{\infty} |\psi(r, \theta, \phi)|^2 r^2 sin\theta \,dr\,d\theta\,d\phi$$
+$$E_n \approx \frac{\displaystyle\int_{0}^{\infty} \left(\frac{1}{2}\left(\frac{∂u}{∂r}\right)^2 + \frac{l(l+1)}{2r^2}u^2 - \frac{1}{r}u^2\right) dr}{\displaystyle\int_{0}^{\infty} u^2 dr}$$
 
-The $r^2sin\theta$ term is the spherical Jacobian, which accounts for the fact that points in spherical coordinates are not uniformly distributed in space the way points in Cartesian coordinates are.
+To improve the accuracy of the Rayleigh quotient, a loss based on the Virial Theorem is also used during training:
 
-The model architecture is the same as the one used for the Time-Dependent Schrödinger Equation, except that the input layer has been modified to accept 3 spatial dimensions instead of 1 spatial and 1 temporal dimension. The model was trained on 100,000,000 samples using the Adam optimizer with the same cosine schedule as the Time-Dependent model, but without warm restarts. The model only outputs 1 channel, representing the real component of the wavefunction, as the imaginary component is 0 for time-independent quantum systems. Unlike the other models, this model uses spherical coordinates as inputs, which are then converted to Cartesian coordinates for visualization. The network takes an input for energy level, but since only the 1s orbital is supported, this input should always be 1.
+$$(2⟨T⟩ + ⟨V⟩)^2 = 0$$
+
+Where $⟨T⟩$ is the expected kinetic energy, and $⟨V⟩$ is the expected potential energy. The expectation of an operator is calculated like this:
+
+$$⟨A⟩ = \frac{\displaystyle\int_{0}^{\infty} u^*(r)\hat{A}u(r) dr}{\displaystyle\int_{0}^{\infty} u^*(r)u(r) dr}$$
+
+This can be thought of as a continuous average of the operator over all space, weighted by the probability density of the particle being at each location. 
+
+Similar to the model for the TDSE, the magnitude loss is defined as follows:
+
+$$\displaystyle\int_{0}^{\infty} |u(r)|^2  dr$$
+
+To prevent the 2s and 1s orbitals from collapsing to the same state, an orthogonality loss is defined as follows:
+
+$$(\displaystyle\int_{0}^{\infty} u^*_n(r)u_m(r) dr)^2$$
+
+This loss is only enforced between 1s and 2s, and is not enforced for any other orbital combinations.
+
+The model architecture is the same as the one used for the Time-Dependent Schrödinger Equation, except that the input layer has been modified to accept 3 channels instead of 5. The model was trained on 600,000,000 samples using the Adam optimizer with the same cosine schedule as the Time-Dependent model, but without warm restarts. In each step, there were 3 sets of collocation points: general points, central points, and deterministic points. General points were sampled from a Gamma distribution and had a maximum radius of 30. Central points were uniformily sampled within a 3 unit radius to prioritize coverage where most of the action was happening. Deterministic points were sampled from a fixed grid. General and central points were only used for calculating the residual loss, and the deterministic points were used for all other losses. Trapezoidal integration was selected for all integrals because it is more accurate than Monte Carlo integration. Unlike the other models, this model uses spherical coordinates as inputs. The model was evaluated by comparing its results to the analytical solutions for the 1s, 2s, and 2p orbitals. Error is measured with mean absolute error between the predicted and analytical radial wavefunctions.
+
+To use the model to estimate the wavefunction of a dihydrogen cation($H^+_2$), the Linear Combination of Atomic Orbitals (LCAO) method is used. The wavefunction of $H^+_2$ can be approximated as a linear combination of two hydrogen 1s orbitals centered around each nucleus. In nature, the dihydrogen cation is rare, only occuring when a cosmic ray ionizes a hydrogen molecule. However, the fact that it only has one electron makes it a great test case for quantum chemistry simulations, as there is no electron-electron repulsion to account for. 
+
+By default, the visualization script renders all of the Hydrogen orbitals supported by the model and the bonding and antibonding molecular orbitals of $H^+_2$.
 
 ### Applications
 - Physics Research: Modeling cold atom traps
@@ -244,7 +268,7 @@ The model architecture is the same as the one used for the Time-Dependent Schrö
 | Heat 3D | 1 layer, 50 hidden | 170M | <4% |
 | Burgers' 1D | 2 layers, 100 hidden | 50M | <4.5% |
 | Schrödinger 1D | 4 layers, 256/256/128 hidden | 400M | 1% to 6.5% depending on energy level[^1] |
-| Schrödinger Hydrogen 1s | 4 layers, 256/256/128 hidden | 100M | <2% |
+| Schrödinger Hydrogen 1s | 4 layers, 256/256/128 hidden | 600M | <$10^{-4}$ MAE for all cases |
 
 [^1]: The error for the Schrödinger Equation model varies based on the energy level of the particle. Lower energy levels tend to have lower error, while higher energy levels exhibit higher error due to their increased oscillatory behavior.
 
