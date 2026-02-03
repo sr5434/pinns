@@ -291,4 +291,4 @@ Working on this project brought back some nostalgia for a time when I was very p
  - Enable inverse problems, where the model solves for physical constants given observations of a system
 
 ## Acknowledgements
-I want to thank [Krivan Semlani](https://www.linkedin.com/in/krivansemlani/) for inspiring me to work on PINNs and encouraging me to keep up the work.
+I want to thank [Krivan Semlani](https://www.linkedin.com/in/krivansemlani/) for inspiring me to work on PINNs and encouraging me to keep up the work. I also want to thank [Prakash Adhikari](https://www.linkedin.com/in/prakash-adhikari-244775215) and [Aryan Senthilkumar](https://www.linkedin.com/in/aryan-senthilkumar-078303324) for helping me understand some of the physics behind Hydrogen's wavefunction.
