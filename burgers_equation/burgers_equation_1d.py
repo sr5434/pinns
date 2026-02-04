@@ -13,17 +13,13 @@ def calculate_residual_loss(x, t, v, u):
     return torch.mean(residual**2)
 
 class BurgersEquation1D(nn.Module):
-    def __init__(self):
+    def __init__(self, hidden_dim=100, hidden_layers=3):
         super(BurgersEquation1D, self).__init__()
-        self.net = nn.Sequential(
-            nn.Linear(3, 100),
-            nn.Tanh(),
-            nn.Linear(100, 100),
-            nn.Tanh(),
-            nn.Linear(100, 100),
-            nn.Tanh(),
-            nn.Linear(100, 1),
-        )
+        layers = [nn.Linear(3, hidden_dim), nn.Tanh()]
+        for _ in range(hidden_layers - 1):
+            layers.extend([nn.Linear(hidden_dim, hidden_dim), nn.Tanh()])
+        layers.append(nn.Linear(hidden_dim, 1))
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x, t, v):
         inputs = torch.cat([x, t, v], dim=-1)
@@ -41,11 +37,13 @@ if __name__ == "__main__":
     parser.add_argument('--beta2', type=float, default=0.999, help='Adam beta2 parameter (default: 0.999)')
     parser.add_argument('--decay-steps', type=int, default=15000, help='Number of steps for learning rate decay (default: 15000)')
     parser.add_argument('--eta-min', type=float, default=1e-5, help='Minimum learning rate for scheduler (default: 1e-5)')
+    parser.add_argument('--hidden-dim', type=int, default=100, help='Hidden layer width (default: 100)')
+    parser.add_argument('--hidden-layers', type=int, default=3, help='Number of hidden layers (default: 3)')
     args = parser.parse_args()
     
     device = args.device
     # Define the model
-    model = BurgersEquation1D().to(device)
+    model = BurgersEquation1D(hidden_dim=args.hidden_dim, hidden_layers=args.hidden_layers).to(device)
     examples = args.examples
     steps = args.steps
     batch_size = examples//steps
