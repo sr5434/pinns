@@ -26,33 +26,31 @@ def calculate_initial_loss(x, y, alpha):
     loss_ic = F.mse_loss(u_pred, u_0)
     return loss_ic
 
-def calculate_boundary_loss(t, alpha):
-    t_broadcast = t.squeeze()[0].repeat(100).reshape(-1, 1)
-    alpha_broadcast = alpha.squeeze()[0].repeat(100).reshape(-1, 1)
+def calculate_boundary_loss(t, alpha, samples):
+    t_broadcast = t.squeeze()[0].repeat(samples).reshape(-1, 1)
+    alpha_broadcast = alpha.squeeze()[0].repeat(samples).reshape(-1, 1)
     # Calculate loss at top, bottom, left, and right
-    u_pred_b = model(torch.zeros(100, 1, device=t_broadcast.device), torch.rand(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
-    u_b = heat_calculation(torch.zeros(100, 1, device=t_broadcast.device), torch.rand(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_pred_b = model(torch.zeros(samples, 1, device=t_broadcast.device), torch.rand(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_b = heat_calculation(torch.zeros(samples, 1, device=t_broadcast.device), torch.rand(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
 
-    u_pred_t = model(torch.ones(100, 1, device=t_broadcast.device), torch.rand(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
-    u_t = heat_calculation(torch.ones(100, 1, device=t_broadcast.device), torch.rand(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
-    u_pred_l = model(torch.rand(100, 1, device=t_broadcast.device), torch.zeros(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
-    u_l = heat_calculation(torch.rand(100, 1, device=t_broadcast.device), torch.zeros(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_pred_t = model(torch.ones(samples, 1, device=t_broadcast.device), torch.rand(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_t = heat_calculation(torch.ones(samples, 1, device=t_broadcast.device), torch.rand(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_pred_l = model(torch.rand(samples, 1, device=t_broadcast.device), torch.zeros(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_l = heat_calculation(torch.rand(samples, 1, device=t_broadcast.device), torch.zeros(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
 
-    u_pred_r = model(torch.rand(100, 1, device=t_broadcast.device), torch.ones(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
-    u_r = heat_calculation(torch.rand(100, 1, device=t_broadcast.device), torch.ones(100, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_pred_r = model(torch.rand(samples, 1, device=t_broadcast.device), torch.ones(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
+    u_r = heat_calculation(torch.rand(samples, 1, device=t_broadcast.device), torch.ones(samples, 1, device=t_broadcast.device), t_broadcast, alpha_broadcast)
     loss_bc = F.mse_loss(u_pred_b, u_b) + F.mse_loss(u_pred_t, u_t) + F.mse_loss(u_pred_l, u_l) + F.mse_loss(u_pred_r, u_r)
     return loss_bc
 
 class HeatEquation2D(nn.Module):
-    def __init__(self):
+    def __init__(self, hidden_dim=50, hidden_layers=2):
         super(HeatEquation2D, self).__init__()
-        self.net = nn.Sequential(
-            nn.Linear(4, 50),
-            nn.Tanh(),
-            nn.Linear(50, 50),
-            nn.Tanh(),
-            nn.Linear(50, 1)
-        )
+        layers = [nn.Linear(4, hidden_dim), nn.Tanh()]
+        for _ in range(hidden_layers - 1):
+            layers.extend([nn.Linear(hidden_dim, hidden_dim), nn.Tanh()])
+        layers.append(nn.Linear(hidden_dim, 1))
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x, y, t, alpha):
         inputs = torch.cat([x, y, t, alpha], dim=-1)
@@ -68,11 +66,17 @@ if __name__ == "__main__":
     parser.add_argument('--examples', type=int, default=75000000, help='Total number of training examples (default: 75000000)')
     parser.add_argument('--beta1', type=float, default=0.9, help='Adam beta1 parameter (default: 0.9)')
     parser.add_argument('--beta2', type=float, default=0.999, help='Adam beta2 parameter (default: 0.999)')
+    parser.add_argument('--hidden-dim', type=int, default=50, help='Hidden layer width (default: 50)')
+    parser.add_argument('--hidden-layers', type=int, default=2, help='Number of hidden layers (default: 2)')
+    parser.add_argument('--residual-weight', type=float, default=1.0, help='Residual loss weight (default: 1.0)')
+    parser.add_argument('--boundary-weight', type=float, default=1.0, help='Boundary loss weight (default: 1.0)')
+    parser.add_argument('--initial-weight', type=float, default=2.0, help='Initial condition loss weight (default: 2.0)')
+    parser.add_argument('--boundary-samples', type=int, default=100, help='Samples per boundary edge (default: 100)')
     args = parser.parse_args()
     
     device = args.device
     # Define the model
-    model = HeatEquation2D().to(device)
+    model = HeatEquation2D(hidden_dim=args.hidden_dim, hidden_layers=args.hidden_layers).to(device)
     examples = args.examples
     steps = args.steps
     batch_size = examples//steps
@@ -93,9 +97,13 @@ if __name__ == "__main__":
         output = model(x_space, y_space, t_time, alpha)
 
         residual_loss = calculate_residual_loss(x_space, y_space, t_time, alpha, output)
-        boundary_loss = calculate_boundary_loss(t_time, alpha)
+        boundary_loss = calculate_boundary_loss(t_time, alpha, args.boundary_samples)
         initial_loss = calculate_initial_loss(x_space, y_space, alpha)
-        loss = residual_loss + boundary_loss + 2*initial_loss
+        loss = (
+            args.residual_weight * residual_loss
+            + args.boundary_weight * boundary_loss
+            + args.initial_weight * initial_loss
+        )
 
         loss.backward()
         optim.step()

@@ -30,15 +30,13 @@ def calculate_initial_loss(x, y, z, alpha):
     return loss_ic
 
 class HeatEquation3D(nn.Module):
-    def __init__(self):
+    def __init__(self, hidden_dim=50, hidden_layers=2):
         super(HeatEquation3D, self).__init__()
-        self.net = nn.Sequential(
-            nn.Linear(5, 50),
-            nn.Tanh(),
-            nn.Linear(50, 50),
-            nn.Tanh(),
-            nn.Linear(50, 1)
-        )
+        layers = [nn.Linear(5, hidden_dim), nn.Tanh()]
+        for _ in range(hidden_layers - 1):
+            layers.extend([nn.Linear(hidden_dim, hidden_dim), nn.Tanh()])
+        layers.append(nn.Linear(hidden_dim, 1))
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x, y, z, t, alpha):
         inputs = torch.cat([x, y, z, t, alpha], dim=-1)
@@ -54,11 +52,15 @@ if __name__ == "__main__":
     parser.add_argument('--examples', type=int, default=170000000, help='Total number of training examples (default: 75000000)')
     parser.add_argument('--beta1', type=float, default=0.9, help='Adam beta1 parameter (default: 0.9)')
     parser.add_argument('--beta2', type=float, default=0.999, help='Adam beta2 parameter (default: 0.999)')
+    parser.add_argument('--hidden-dim', type=int, default=50, help='Hidden layer width (default: 50)')
+    parser.add_argument('--hidden-layers', type=int, default=2, help='Number of hidden layers (default: 2)')
+    parser.add_argument('--residual-weight', type=float, default=1.0, help='Residual loss weight (default: 1.0)')
+    parser.add_argument('--initial-weight', type=float, default=2.0, help='Initial condition loss weight (default: 2.0)')
     args = parser.parse_args()
     
     device = args.device
     # Define the model
-    model = HeatEquation3D().to(device)
+    model = HeatEquation3D(hidden_dim=args.hidden_dim, hidden_layers=args.hidden_layers).to(device)
     examples = args.examples
     steps = args.steps
     batch_size = examples//steps
@@ -81,7 +83,7 @@ if __name__ == "__main__":
         residual_loss = calculate_residual_loss(x_space, y_space, z_space, t_time, alpha, output)
         # boundary_loss = calculate_boundary_loss(t_time, alpha)
         initial_loss = calculate_initial_loss(x_space, y_space, z_space, alpha)
-        loss = residual_loss + 2*initial_loss
+        loss = args.residual_weight * residual_loss + args.initial_weight * initial_loss
 
         loss.backward()
         optim.step()

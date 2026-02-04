@@ -3,6 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 import time
 from softadapt import SoftAdapt
+import argparse
 
 def schrodinger_calculation(x, t, L, n, m):
     x = x.reshape((-1, 1))
@@ -70,18 +71,17 @@ def calculate_boundary_loss(t, L, n):
     return loss_bc
 
 class SchrodingerEquation1D(nn.Module):
-    def __init__(self, L):
+    def __init__(self, L, layer_sizes=(256, 256, 128), tanh_scale=3.0):
         super(SchrodingerEquation1D, self).__init__()
-        self.net = nn.Sequential(
-            nn.Linear(5, 256),
-            nn.Tanh(),
-            nn.Linear(256, 256),
-            nn.Tanh(),
-            nn.Linear(256, 128),
-            nn.Tanh(),
-            nn.Linear(128, 2)
-        )
+        sizes = [5, *layer_sizes, 2]
+        layers = []
+        for in_features, out_features in zip(sizes[:-1], sizes[1:]):
+            layers.append(nn.Linear(in_features, out_features))
+            if out_features != 2:
+                layers.append(nn.Tanh())
+        self.net = nn.Sequential(*layers)
         self.L = L
+        self.tanh_scale = tanh_scale
 
     def forward(self, x, t, n):
         omega = (torch.pi**2 * n**2) / (2.0 * self.L**2)
@@ -93,37 +93,59 @@ class SchrodingerEquation1D(nn.Module):
         psi0 = torch.cat([psi0_real, psi0_imag], dim=-1)
         # Enforce boundary conditions
         bc = torch.sin(torch.pi * x / self.L)
-        return psi0 + torch.tanh(3.0 * t)*bc*raw_output
+        return psi0 + torch.tanh(self.tanh_scale * t) * bc * raw_output
 
 if __name__ == "__main__":
-    device = "mps"
+    parser = argparse.ArgumentParser(description="Train Schrodinger Equation 1D PINN")
+    parser.add_argument("--device", type=str, default="mps", help="Device to use for training (default: mps)")
+    parser.add_argument("--examples", type=int, default=400000000, help="Total number of training examples (default: 400000000)")
+    parser.add_argument("--steps", type=int, default=50000, help="Number of training steps (default: 50000)")
+    parser.add_argument("--length", type=float, default=1.0, help="Length of the 1D box (default: 1.0)")
+    parser.add_argument("--mass", type=float, default=1.0, help="Particle mass (default: 1.0)")
+    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate (default: 1e-3)")
+    parser.add_argument("--beta1", type=float, default=0.9, help="Adam beta1 parameter (default: 0.9)")
+    parser.add_argument("--beta2", type=float, default=0.999, help="Adam beta2 parameter (default: 0.999)")
+    parser.add_argument("--decay-steps", type=int, default=44998, help="Steps before scheduler cutoff (default: 44998)")
+    parser.add_argument("--eta-min", type=float, default=1e-4, help="Scheduler minimum LR (default: 1e-4)")
+    parser.add_argument("--t0", type=int, default=15000, help="Warm restart period T_0 (default: 15000)")
+    parser.add_argument("--hidden-sizes", type=int, nargs=3, default=[256, 256, 128], help="Hidden layer sizes (default: 256 256 128)")
+    parser.add_argument("--tanh-scale", type=float, default=3.0, help="Output tanh scale (default: 3.0)")
+    parser.add_argument("--residual-weight", type=float, default=1.0, help="Residual loss weight (default: 1.0)")
+    parser.add_argument("--magnitude-weight", type=float, default=1.0, help="Magnitude loss weight (default: 1.0)")
+    parser.add_argument("--group-divisor", type=int, default=32, help="Batch divisor for group count (default: 32)")
+    parser.add_argument("--energy-ramp-steps", type=int, default=15000, help="Steps between energy level increases (default: 15000)")
+    parser.add_argument("--max-energy", type=int, default=3, help="Maximum energy level (default: 3)")
+    parser.add_argument("--grad-clip", type=float, default=1.0, help="Gradient clipping max norm (default: 1.0)")
+    args = parser.parse_args()
+
+    device = args.device
     # Define the model
-    examples = 400000000
-    steps = 50000# Steps per epoch
-    length = 1.0# Length of the 1d box
-    mass = 1.0
-    batch_size = examples//steps
+    examples = args.examples
+    steps = args.steps  # Steps per epoch
+    length = args.length  # Length of the 1d box
+    mass = args.mass
+    batch_size = examples // steps
     epochs = 1
-    lr = 1e-3
-    decay_steps = 44998# 2 less than the total steps for lr scheduler just to be safe
+    lr = args.lr
+    decay_steps = args.decay_steps  # 2 less than the total steps for lr scheduler just to be safe
     # softAdapt = SoftAdapt(beta=0.1)
-    betas = (0.9, 0.999)
-    model = SchrodingerEquation1D(length).to(device)
+    betas = (args.beta1, args.beta2)
+    model = SchrodingerEquation1D(length, layer_sizes=tuple(args.hidden_sizes), tanh_scale=args.tanh_scale).to(device)
     # residual_loss_history = []
     # boundary_loss_history = []
     # initial_loss_history = []
     # magnitude_loss_history = []
     # update_loss_weights_every = 5
     optim = torch.optim.Adam(model.parameters(), lr, betas)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optim, eta_min=1e-4, T_0 = 15000)
-    weights = torch.tensor([1.0, 1.0])
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optim, eta_min=args.eta_min, T_0=args.t0)
+    weights = torch.tensor([args.residual_weight, args.magnitude_weight])
     for i in range(steps):
         start = time.time()
         # Extract batch and ensure gradients are tracked
         # Build a batch: G groups, P x-samples each
-        G = batch_size//32
-        P = batch_size//G
-        max_energy = min(int(i/15000 + 1), 3)
+        G = batch_size // args.group_divisor
+        P = batch_size // G
+        max_energy = min(int(i / args.energy_ramp_steps + 1), args.max_energy)
         t_time = torch.rand(G, 1, device=device, requires_grad=True).repeat_interleave(P, dim=0)
         energy_levels = torch.randint(1, max_energy + 1, (G, 1), device=device).repeat_interleave(P, dim=0)
         x_space = torch.rand(G * P, 1, device=device, requires_grad=True)
@@ -151,7 +173,7 @@ if __name__ == "__main__":
 
         loss.backward()
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
         optim.step()
         optim.zero_grad()
