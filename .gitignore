@@ -1,2 +1,7 @@
 *.pt
 .venv
+codex_notes
+AGENTS.md
+plans
+__pycache__
+.DS_Store

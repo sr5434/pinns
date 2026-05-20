@@ -1,0 +1,134 @@
+{
+  "models_dir": "h2_models",
+  "model_family": "energy_norm_only",
+  "checkpoint_prefix": "energy_norm_only_schrodingers_equation_h2_ground",
+  "eval_device_arg": "auto",
+  "resolved_device": "mps",
+  "eval_box_length": 8.0,
+  "eval_batch_size": 9375,
+  "eval_repeats": 16,
+  "fit_kind": "natural_cubic",
+  "fit_points": 400,
+  "results": [
+    {
+      "R": 0.4,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R0.4.pt",
+      "predicted_quadrupole": 0.06594915501773357,
+      "predicted_energy_hartree": 14.458890723995864,
+      "reference_energy_hartree": -0.1202303411778644,
+      "absolute_error_hartree": 14.579121065173728
+    },
+    {
+      "R": 0.8,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R0.8.pt",
+      "predicted_quadrupole": 0.13992674928158522,
+      "predicted_energy_hartree": 6.8372312353458256,
+      "reference_energy_hartree": -1.020056666360139,
+      "absolute_error_hartree": 7.8572879017059645
+    },
+    {
+      "R": 1.0,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.pt",
+      "predicted_quadrupole": 0.32949271239340305,
+      "predicted_energy_hartree": 5.0480489283800125,
+      "reference_energy_hartree": -1.1245397195465792,
+      "absolute_error_hartree": 6.172588647926592
+    },
+    {
+      "R": 1.1,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.1.pt",
+      "predicted_quadrupole": 0.4249571058899164,
+      "predicted_energy_hartree": 10.541434255343948,
+      "reference_energy_hartree": -1.1500573677382886,
+      "absolute_error_hartree": 11.691491623082236
+    },
+    {
+      "R": 1.2,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.2.pt",
+      "predicted_quadrupole": 0.5642622746527195,
+      "predicted_energy_hartree": 15.328365240556497,
+      "reference_energy_hartree": -1.1649352434400282,
+      "absolute_error_hartree": 16.493300483996524
+    },
+    {
+      "R": 1.3,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.3.pt",
+      "predicted_quadrupole": 1.2357235327363014,
+      "predicted_energy_hartree": 13.066298234491395,
+      "reference_energy_hartree": -1.17234714903778,
+      "absolute_error_hartree": 14.238645383529175
+    },
+    {
+      "R": 1.4,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.4.pt",
+      "predicted_quadrupole": 1.855412282049656,
+      "predicted_energy_hartree": 8.006069082966338,
+      "reference_energy_hartree": -1.1744757142200755,
+      "absolute_error_hartree": 9.180544797186414
+    },
+    {
+      "R": 1.5,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.5.pt",
+      "predicted_quadrupole": 1.488083627074957,
+      "predicted_energy_hartree": 8.858718720419954,
+      "reference_energy_hartree": -1.1728550795781447,
+      "absolute_error_hartree": 10.0315737999981
+    },
+    {
+      "R": 1.6,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.6.pt",
+      "predicted_quadrupole": 1.6228523924946785,
+      "predicted_energy_hartree": 5.38588632363826,
+      "reference_energy_hartree": -1.1685833733709263,
+      "absolute_error_hartree": 6.5544696970091865
+    },
+    {
+      "R": 1.7,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.7.pt",
+      "predicted_quadrupole": 1.796918474137783,
+      "predicted_energy_hartree": 10.639076605110484,
+      "reference_energy_hartree": -1.1624587268978088,
+      "absolute_error_hartree": 11.801535332008292
+    },
+    {
+      "R": 1.8,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R1.8.pt",
+      "predicted_quadrupole": 2.004872765392065,
+      "predicted_energy_hartree": 7.809912486984912,
+      "reference_energy_hartree": -1.155068737610807,
+      "absolute_error_hartree": 8.964981224595718
+    },
+    {
+      "R": 2.2,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R2.2.pt",
+      "predicted_quadrupole": NaN,
+      "predicted_energy_hartree": NaN,
+      "reference_energy_hartree": -1.120132116847639,
+      "absolute_error_hartree": NaN
+    },
+    {
+      "R": 3.0,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R3.pt",
+      "predicted_quadrupole": 7.354570657014847,
+      "predicted_energy_hartree": 30.28981708486875,
+      "reference_energy_hartree": -1.057326268869244,
+      "absolute_error_hartree": 31.347143353737994
+    },
+    {
+      "R": 5.0,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R5.pt",
+      "predicted_quadrupole": 22.450713604688644,
+      "predicted_energy_hartree": -10706585.271679688,
+      "reference_energy_hartree": -1.0037856585819889,
+      "absolute_error_hartree": 10706584.26789403
+    },
+    {
+      "R": 6.0,
+      "checkpoint": "h2_models/energy_norm_only_schrodingers_equation_h2_ground_R6.pt",
+      "predicted_quadrupole": 9.766670048236847,
+      "predicted_energy_hartree": 23.2765236745278,
+      "reference_energy_hartree": -1.0008357076542278,
+      "absolute_error_hartree": 24.27735938218203
+    }
+  ]
+}

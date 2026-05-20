@@ -1,0 +1,108 @@
+{
+  "models_dir": "h2_models",
+  "eval_device_arg": "auto",
+  "resolved_device": "mps",
+  "eval_box_length": 8.0,
+  "eval_batch_size": 9375,
+  "eval_repeats": 16,
+  "fit_kind": "natural_cubic",
+  "fit_points": 400,
+  "results": [
+    {
+      "R": 0.8,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R0.8.pt",
+      "predicted_quadrupole": 0.28611692879348993,
+      "predicted_energy_hartree": -1.0174603685736656,
+      "reference_energy_hartree": -1.020056666360139,
+      "absolute_error_hartree": 0.0025962977864733006
+    },
+    {
+      "R": 1.0,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R1.pt",
+      "predicted_quadrupole": 0.44574806839227676,
+      "predicted_energy_hartree": -1.1257807835936546,
+      "reference_energy_hartree": -1.1245397195465792,
+      "absolute_error_hartree": 0.0012410640470754686
+    },
+    {
+      "R": 1.2,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R1.2.pt",
+      "predicted_quadrupole": 0.6469321735203266,
+      "predicted_energy_hartree": -1.1642067457238832,
+      "reference_energy_hartree": -1.1649352434400282,
+      "absolute_error_hartree": 0.0007284977161450268
+    },
+    {
+      "R": 1.3,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R1.3.pt",
+      "predicted_quadrupole": 0.7664491310715675,
+      "predicted_energy_hartree": -1.1717486072045107,
+      "reference_energy_hartree": -1.17234714903778,
+      "absolute_error_hartree": 0.0005985418332692394
+    },
+    {
+      "R": 1.4,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R1.4.pt",
+      "predicted_quadrupole": 0.9018437713384628,
+      "predicted_energy_hartree": -1.1747055745550563,
+      "reference_energy_hartree": -1.1744757142200755,
+      "absolute_error_hartree": 0.00022986033498084701
+    },
+    {
+      "R": 1.5,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R1.5.pt",
+      "predicted_quadrupole": 1.0208926163613796,
+      "predicted_energy_hartree": -1.1731310685475669,
+      "reference_energy_hartree": -1.1728550795781447,
+      "absolute_error_hartree": 0.00027598896942215845
+    },
+    {
+      "R": 1.6,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R1.6.pt",
+      "predicted_quadrupole": 1.165457896888256,
+      "predicted_energy_hartree": -1.1696193628013134,
+      "reference_energy_hartree": -1.1685833733709263,
+      "absolute_error_hartree": 0.0010359894303870743
+    },
+    {
+      "R": 1.8,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R1.8.pt",
+      "predicted_quadrupole": 1.4289916642010212,
+      "predicted_energy_hartree": -1.1557205956843164,
+      "reference_energy_hartree": -1.155068737610807,
+      "absolute_error_hartree": 0.0006518580735093149
+    },
+    {
+      "R": 2.2,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R2.2.pt",
+      "predicted_quadrupole": 1.961494043469429,
+      "predicted_energy_hartree": -1.1223080815239386,
+      "reference_energy_hartree": -1.120132116847639,
+      "absolute_error_hartree": 0.0021759646762995466
+    },
+    {
+      "R": 3.0,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R3.pt",
+      "predicted_quadrupole": 2.3815203607082367,
+      "predicted_energy_hartree": -1.0599300290147464,
+      "reference_energy_hartree": -1.057326268869244,
+      "absolute_error_hartree": 0.002603760145502454
+    },
+    {
+      "R": 5.0,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R5.pt",
+      "predicted_quadrupole": 3.5673184990882874,
+      "predicted_energy_hartree": -1.0009670734405518,
+      "reference_energy_hartree": -1.0037856585819889,
+      "absolute_error_hartree": 0.002818585141437069
+    },
+    {
+      "R": 6.0,
+      "checkpoint": "h2_models/schrodingers_equation_h2_ground_R6.pt",
+      "predicted_quadrupole": 6.658777892589569,
+      "predicted_energy_hartree": -0.9936414075394472,
+      "reference_energy_hartree": -1.0008357076542278,
+      "absolute_error_hartree": 0.007194300114780616
+    }
+  ]
+}
