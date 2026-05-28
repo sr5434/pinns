@@ -224,8 +224,7 @@ It should also be noted that unlike the other 2 models, this model outputs 2 cha
 ### Time-Independent Schrödinger Equation for Hydrogen Atom
 <video src="./plots/schrodinger_equation_hydrogen.mp4" width="320" height="240" controls></video>
 
-
-https://github.com/user-attachments/assets/ec5d879f-72f1-4780-be18-b965e7244c39
+https://github.com/user-attachments/assets/107f3307-35e8-4257-b63b-dea2b3d47d33
 
 
 The repository also contains code to train and visualize a PINN that solves the Time-Independent Schrödinger Equation for the radial portion (more on this below) of Hydrogen's wavefunction. The model supports the 1s, 2s, and 2p orbitals. The Time-Independent equation was used because the probability density of hydrogen orbitals does not change over time. The Time-Independent Schrödinger Equation is as follows:
@@ -257,7 +256,7 @@ $$(2⟨T⟩ + ⟨V⟩)^2 = 0$$
 
 Where $⟨T⟩$ is the expected kinetic energy, and $⟨V⟩$ is the expected potential energy. The expectation of an operator is calculated like this:
 
-$$⟨A⟩ = \frac{\displaystyle\int_{0}^{\infty} u^{*}(r)\hat{A}u(r) dr}{\displaystyle\int_{0}^{\infty} u^{*}(r)u(r) dr}$$
+$$\langle A\rangle = \frac{\displaystyle\int_{0}^{\infty} u^{\ast}(r)\hat{A}u(r)\,dr}{\displaystyle\int_{0}^{\infty} u^{\ast}(r)u(r)\,dr}$$
 
 This can be thought of as a continuous average of the operator over all space, weighted by the probability density of the particle being at each location. 
 
@@ -280,13 +279,19 @@ By default, the visualization script renders all of the Hydrogen orbitals suppor
 ### Time-Independent Schrödinger Equation for Hydrogen Molecule
 <video src="./plots/hydrogen_molecule_R_1.4.mp4" width="320" height="240" controls></video>
 
+
+https://github.com/user-attachments/assets/e82f623b-1e09-4215-9ca6-2e630a215bf0
+
 The Schrödinger Equation for the hydrogen molecule is a more complex problem than the hydrogen atom, as it has 2 electrons instead of 1. Because of this, it is a many body problem and has no exact analytical solution. The Hamiltonian operator for the hydrogen molecule is defined as:
+
 $$\hat{H} = \underbrace{-\frac{\hbar^2}{2m}\nabla^2_1 - \frac{\hbar^2}{2m}\nabla^2_2}_{\text{Kinetic}} - \underbrace{\frac{e^2}{4\pi\epsilon_0r_{1A}} - \frac{e^2}{4\pi\epsilon_0r_{1B}} - \frac{e^2}{4\pi\epsilon_0r_{2A}} - \frac{e^2}{4\pi\epsilon_0r_{2B}}}_{\text{Electron-Nucleus Attraction}} + \underbrace{\frac{e^2}{4\pi\epsilon_0r_{12}} + \frac{e^2}{4\pi\epsilon_0r_{AB}}}_{\text{Electron-Electron and Nucleus-Nucleus Repulsion}}$$
 
 Where $r_{1A}$ is the distance between electron 1 and nucleus A, $r_{1B}$ is the distance between electron 1 and nucleus B, $r_{2A}$ is the distance between electron 2 and nucleus A, $r_{2B}$ is the distance between electron 2 and nucleus B, $r_{12}$ is the distance between electron 1 and electron 2, and $r_{AB}$ is the distance between nucleus A and nucleus B. The model was trained at selected internuclear distances from 0.4 to 6.0 and achieves better than chemical accuracy at all distances and sub-millihartree accuracy at most distances. The model was trained on a 6D box (3D per electron) with a length of 8 in each dimension. 3 sets of points were sampled using Sobol sampling, one for use in the normalization loss and the other two for use in calculating the hamiltonian/energy. There were also two separate points sampled using uniform sampling: one for the whole box and another for a smaller box with a length of 4 in each dimension. The sobol points were used to calculate the variance loss like so:
+
 $$\frac{\langle (\hat{H}\psi-E\psi)^2 \rangle}{\langle \psi|\psi \rangle}$$
 
 The model also used a rayleigh consistency loss to penalize the model for sampling different energies when fed different sobol sets. No orthogonality loss was used because the model was only trained on the ground state, but virial loss was kept and an energy minimization loss was added to encourage the model to find the lowest energy solution. The energy minimization loss compared the model energy to the exponential moving average of step energies to calculate an advantage, and this advantage was clipped (sort of like in policy gradient reinforcement learning) to prevent the model from sacrificing physical accuracy for lower energy. The minimization term was also gated based on how well the model followed normalization, consistency, and virial losses. The model used an LCAO and Jastrow (three-body) ansatz to help the model learn the correct wavefunction. The log of $\psi$ was used for calculating hamiltonians, which were rewritten with this in mind, to improve numerical stability. The model used a batch size of 33,972 points (combining all sets) and was trained for 20,000 steps for each internuclear distance (679,440,000 collocation points total). Model size and learning rate/schedule are the same as the Hydrogen atom model. The Nuclear Schrödinger equation was solved using LEVEL16. Below is the equation:
+
 $$\left[-\frac{\hbar^2}{2\mu}\frac{d^2}{dR^2} + V(R)\right]\chi(R) = E\chi(R)$$
 
 Where $\mu$ is the reduced mass of the two nuclei, $V(R)$ is the potential energy curve generated by the electronic Schrödinger equation, and $\chi(R)$ is the nuclear wavefunction. The model was evaluated by comparing its results to the results generated by LEVEL16. Using the solutions, the zero-point energy of the molecule was calculated to be 2177.066 cm^-1, which is above the accepted value by about 96.466 cm^-1. The specific heat capacity at constant volume of the molecule was also calculated to be 9.949 J/gK at 300K, which is below the accepted value by about 0.211 J/gK. Other values were also calculated, but are omitted for brevity. Videos, plots, and data for the hydrogen molecule can be found in the `schrodingers_equation/assets` folder. There is also data for an ablation with just energy and normalization losses, which as expected, performs very poorly.
