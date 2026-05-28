@@ -1,5 +1,5 @@
 # Physics-Informed Neural Networks
-This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve problems in quantum mechanics, thermodynamics, and fluid dynamics by learning directly from physics rather than from labeled data. Most of the models can be trained in a few minutes using an M2 Mac. Pretrained models can be found in [this Huggingface model](https://huggingface.co/sr5434/PINN-Collection).
+This repository contains a collection of physics-informed neural networks (PINNs) that are trained to solve problems in quantum chemistry, thermodynamics, and fluid dynamics by learning directly from physics rather than from labeled data. Most of the models can be trained in a few minutes using an M2 Mac. Pretrained models can be found in [this Huggingface model](https://huggingface.co/sr5434/PINN-Collection).
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -65,7 +65,6 @@ python burgers_equation_visualization_1d.py
 ```
 #### Train on Schrödinger Equation(1D)
 ```bash
-# Train the 1D Schrödinger equation model
 cd schrodingers_equation
 python schrodingers_equation_1d.py
 
@@ -81,9 +80,8 @@ cd schrodingers_equation
 curl -L "https://huggingface.co/sr5434/PINN-Collection/resolve/main/schrodingers_equation_1d.pt?download=true" -o schrodingers_equation_1d.pt
 python schrodingers_visualization_1d.py
 ```
-#### Train on Schrödinger Equation(Hydrogen)
+#### Train on Schrödinger Equation(Hydrogen Atom)
 ```bash
-# Train the 1D Schrödinger equation model
 cd schrodingers_equation
 python schrodingers_equation_hydrogen.py
 
@@ -91,13 +89,32 @@ python schrodingers_equation_hydrogen.py
 python schrodingers_visualization_hydrogen.py
 ```
 
-#### Test Pretrained Model on Schrödinger Equation(Hydrogen)
+#### Test Pretrained Model on Schrödinger Equation(Hydrogen Atom)
 ```bash
 cd schrodingers_equation
 
 # Generate visualizations
 curl -L "https://huggingface.co/sr5434/PINN-Collection/resolve/main/schrodingers_equation_hydrogen.pt?download=true" -o schrodingers_equation_hydrogen.pt
 python schrodingers_visualization_hydrogen.py
+```
+#### Train on Schrödinger Equation(Hydrogen Molecule)
+```bash
+cd schrodingers_equation
+python schrodingers_equation_h2.py
+
+# Generate visualizations
+python schrodingers_visualization_h2.py
+```
+
+#### Test Pretrained Model on Schrödinger Equation(Hydrogen Molecule)
+```bash
+cd schrodingers_equation
+
+# Generate visualizations
+huggingface-cli download sr5434/PINN-Collection --include "h2_models/*" --local-dir ./
+python schrodingers_visualization_h2.py
+python3 plot_h2_pes.py
+python3 calculate_observables.py # No need to recompile LEVEL16 on Mac, as precompiled binaries are included in the repo
 ```
 
 ## What is a PINN?
@@ -240,7 +257,7 @@ $$(2⟨T⟩ + ⟨V⟩)^2 = 0$$
 
 Where $⟨T⟩$ is the expected kinetic energy, and $⟨V⟩$ is the expected potential energy. The expectation of an operator is calculated like this:
 
-$$⟨A⟩ = \frac{\displaystyle\int_{0}^{\infty} u^{\*}(r)\hat{A}u(r) dr}{\displaystyle\int_{0}^{\infty} u^{\*}(r)u(r) dr}$$
+$$⟨A⟩ = \frac{\displaystyle\int_{0}^{\infty} u^{*}(r)\hat{A}u(r) dr}{\displaystyle\int_{0}^{\infty} u^{*}(r)u(r) dr}$$
 
 This can be thought of as a continuous average of the operator over all space, weighted by the probability density of the particle being at each location. 
 
@@ -260,9 +277,24 @@ To use the model to estimate the wavefunction of a dihydrogen cation($H^+_2$), t
 
 By default, the visualization script renders all of the Hydrogen orbitals supported by the model and the bonding and antibonding molecular orbitals of $H^+_2$.
 
+### Time-Independent Schrödinger Equation for Hydrogen Molecule
+<video src="./plots/hydrogen_molecule_R_1.4.mp4" width="320" height="240" controls></video>
+
+The Schrödinger Equation for the hydrogen molecule is a more complex problem than the hydrogen atom, as it has 2 electrons instead of 1. Because of this, it is a many body problem and has no exact analytical solution. The Hamiltonian operator for the hydrogen molecule is defined as:
+$$\hat{H} = \underbrace{-\frac{\hbar^2}{2m}\nabla^2_1 - \frac{\hbar^2}{2m}\nabla^2_2}_{\text{Kinetic}} - \underbrace{\frac{e^2}{4\pi\epsilon_0r_{1A}} - \frac{e^2}{4\pi\epsilon_0r_{1B}} - \frac{e^2}{4\pi\epsilon_0r_{2A}} - \frac{e^2}{4\pi\epsilon_0r_{2B}}}_{\text{Electron-Nucleus Attraction}} + \underbrace{\frac{e^2}{4\pi\epsilon_0r_{12}} + \frac{e^2}{4\pi\epsilon_0r_{AB}}}_{\text{Electron-Electron and Nucleus-Nucleus Repulsion}}$$
+
+Where $r_{1A}$ is the distance between electron 1 and nucleus A, $r_{1B}$ is the distance between electron 1 and nucleus B, $r_{2A}$ is the distance between electron 2 and nucleus A, $r_{2B}$ is the distance between electron 2 and nucleus B, $r_{12}$ is the distance between electron 1 and electron 2, and $r_{AB}$ is the distance between nucleus A and nucleus B. The model was trained at selected internuclear distances from 0.4 to 6.0 and achieves better than chemical accuracy at all distances and sub-millihartree accuracy at most distances. The model was trained on a 6D box (3D per electron) with a length of 8 in each dimension. 3 sets of points were sampled using Sobol sampling, one for use in the normalization loss and the other two for use in calculating the hamiltonian/energy. There were also two separate points sampled using uniform sampling: one for the whole box and another for a smaller box with a length of 4 in each dimension. The sobol points were used to calculate the variance loss like so:
+$$\frac{\langle (\hat{H}\psi-E\psi)^2 \rangle}{\langle \psi|\psi \rangle}$$
+
+The model also used a rayleigh consistency loss to penalize the model for sampling different energies when fed different sobol sets. No orthogonality loss was used because the model was only trained on the ground state, but virial loss was kept and an energy minimization loss was added to encourage the model to find the lowest energy solution. The energy minimization loss compared the model energy to the exponential moving average of step energies to calculate an advantage, and this advantage was clipped (sort of like in policy gradient reinforcement learning) to prevent the model from sacrificing physical accuracy for lower energy. The minimization term was also gated based on how well the model followed normalization, consistency, and virial losses. The model used an LCAO and Jastrow (three-body) ansatz to help the model learn the correct wavefunction. The log of $\psi$ was used for calculating hamiltonians, which were rewritten with this in mind, to improve numerical stability. The model used a batch size of 33,972 points (combining all sets) and was trained for 20,000 steps for each internuclear distance (679,440,000 collocation points total). Model size and learning rate/schedule are the same as the Hydrogen atom model. The Nuclear Schrödinger equation was solved using LEVEL16. Below is the equation:
+$$\left[-\frac{\hbar^2}{2\mu}\frac{d^2}{dR^2} + V(R)\right]\chi(R) = E\chi(R)$$
+
+Where $\mu$ is the reduced mass of the two nuclei, $V(R)$ is the potential energy curve generated by the electronic Schrödinger equation, and $\chi(R)$ is the nuclear wavefunction. The model was evaluated by comparing its results to the results generated by LEVEL16. Using the solutions, the zero-point energy of the molecule was calculated to be 2177.066 cm^-1, which is above the accepted value by about 96.466 cm^-1. The specific heat capacity at constant volume of the molecule was also calculated to be 9.949 J/gK at 300K, which is below the accepted value by about 0.211 J/gK. Other values were also calculated, but are omitted for brevity. Videos, plots, and data for the hydrogen molecule can be found in the `schrodingers_equation/assets` folder. There is also data for an ablation with just energy and normalization losses, which as expected, performs very poorly.
+
 ### Applications
 - Physics Research: Modeling cold atom traps
 - Chemistry: Understanding atomic structures and reactions
+- Materials Science: Calculating properties of materials, such as specific heat capacity
 
 ## Model Performance Summary
 | Model | Architecture | Training Samples | Max Error |
@@ -272,7 +304,8 @@ By default, the visualization script renders all of the Hydrogen orbitals suppor
 | Heat 3D | 1 layer, 50 hidden | 170M | <4% |
 | Burgers' 1D | 2 layers, 100 hidden | 50M | <4.5% |
 | Schrödinger 1D | 4 layers, 256/256/128 hidden | 400M | 1% to 6.5% depending on energy level[^1] |
-| Schrödinger Hydrogen 1s | 4 layers, 256/256/128 hidden | 600M | <$10^{-4}$ MAE for all cases |
+| Schrödinger Hydrogen atom | 4 layers, 256/256/128 hidden | 600M | <$10^{-4}$ MAE for all cases |
+| Schrödinger Hydrogen molecule | 4 layers, 256/256/128 hidden | 679.44M | <1 mHa for most distances, better than chemical accuracy for all distances |
 
 [^1]: The error for the Schrödinger Equation model varies based on the energy level of the particle. Lower energy levels tend to have lower error, while higher energy levels exhibit higher error due to their increased oscillatory behavior.
 
@@ -291,4 +324,4 @@ Working on this project brought back some nostalgia for a time when I was very p
  - Enable inverse problems, where the model solves for physical constants given observations of a system
 
 ## Acknowledgements
-I want to thank [Krivan Semlani](https://www.linkedin.com/in/krivansemlani/) for inspiring me to work on PINNs and encouraging me to keep up the work. I also want to thank [Prakash Adhikari](https://www.linkedin.com/in/prakash-adhikari-244775215) and [Aryan Senthilkumar](https://www.linkedin.com/in/aryan-senthilkumar-078303324) for helping me understand some of the physics behind Hydrogen's wavefunction.
+I want to thank [Krivan Semlani](https://www.linkedin.com/in/krivansemlani/) for inspiring me to work on PINNs and encouraging me to keep up the work. I also want to thank [Prakash Adhikari](https://www.linkedin.com/in/prakash-adhikari-244775215) and [Aryan Senthilkumar](https://www.linkedin.com/in/aryan-senthilkumar-078303324) for helping me understand some of the physics behind Hydrogen's wavefunction. Finally, I want to thank [Professor George C. McBane](https://www.gvsu.edu/chem/george-mcbane-18.htm) for suggesting that I use LEVEL16 to solve the nuclear Schrödinger equation for the hydrogen molecule.
